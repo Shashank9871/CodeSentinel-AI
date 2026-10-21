@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeSentinel AI | Autonomous Code Review & Security Platform</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              900: '#134e4a',
+            },
+            dark: {
+              base: '#090d16',
+              card: '#0f172a',
+              border: '#1e293b',
+              hover: '#1e293b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="bg-[#090d16] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
+
+  <!-- Top Navbar -->
+  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent">CodeSentinel AI</span>
+            <span class="px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">v1.0 Pro</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Autonomous AI Code Review & Security Intelligence</p>
+        </div>
+      </div>
+
+      <!-- Right Utilities -->
+      <div class="flex items-center space-x-3">
+        <div id="statusBadge" class="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="activeEngineLabel">Engine: Heuristic + AST</span>
+        </div>
+
+        <button id="openSettingsBtn" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs font-medium text-slate-200 transition">
+          <i data-lucide="settings" class="w-4 h-4 text-slate-400"></i>
+          <span>Settings</span>
+        </button>
+
+        <a href="https://github.com" target="_blank" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-xs font-medium text-indigo-300 transition">
+          <i data-lucide="github" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">GitHub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Quick Demo Presets Banner -->
+  <div class="bg-slate-900/40 border-b border-slate-800/60 py-2.5 px-4 sm:px-6">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div class="flex items-center space-x-2 text-slate-400">
+        <i data-lucide="sparkles" class="w-4 h-4 text-cyan-400"></i>
+        <span class="font-medium text-slate-300">Instant Demo Scenarios:</span>
+      </div>
+      <div class="flex flex-wrap items-center gap-2" id="demoPresets">
+        <button onclick="loadSample('sample-auth-vuln')" class="px-2.5 py-1 rounded-md bg-rose-950/40 hover:bg-rose-900/50 border border-rose-800/50 text-rose-300 transition flex items-center space-x-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+          <span>Auth & SQL Injection (Python)</span>
+        </button>
+        <button onclick="loadSample('sample-node-payment')" class="px-2.5 py-1 rounded-md bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/50 text-amber-300 transition flex items-center space-x-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+          <span>Race Condition & Leak (Node.js)</span>
+        </button>
+        <button onclick="loadSample('sample-react-leak')" class="px-2.5 py-1 rounded-md bg-sky-950/40 hover:bg-sky-900/50 border border-sky-800/50 text-sky-300 transition flex items-center space-x-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+          <span>Re-render Loop & XSS (React)</span>
+        </button>
+        <button onclick="loadSample('sample-clean-go')" class="px-2.5 py-1 rounded-md bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-800/50 text-emerald-300 transition flex items-center space-x-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span>Clean LRU Cache (Go)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
+
+    <!-- Mode Selector Tabs -->
+    <div class="flex items-center space-x-2 border-b border-slate-800 pb-3">
+      <button id="modeGithubBtn" onclick="switchMode('github')" class="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition bg-slate-800 text-cyan-400 border border-slate-700">
+        <i data-lucide="git-pull-request" class="w-4 h-4"></i>
+        <span>Review GitHub Pull Request</span>
+      </button>
+      <button id="modeCodeBtn" onclick="switchMode('code')" class="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm text-slate-400 hover:text-slate-200 transition hover:bg-slate-800/50">
+        <i data-lucide="code-2" class="w-4 h-4"></i>
+        <span>Direct Code / Unified Diff</span>
+      </button>
+    </div>
+
+    <!-- Mode A: GitHub PR Input Box -->
+    <div id="githubInputSection" class="glass-panel p-6">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">GitHub Pull Request URL</label>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-grow">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                <i data-lucide="link-2" class="w-4 h-4"></i>
+              </div>
+              <input id="githubPrUrl" type="url" placeholder="https://github.com/facebook/react/pull/28211" class="w-full pl-10 pr-4 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500" />
+            </div>
+            <button id="runGithubReviewBtn" onclick="executeGithubReview()" class="px-6 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-medium text-sm shadow-lg shadow-cyan-500/25 flex items-center justify-center space-x-2 transition shrink-0">
+              <i data-lucide="cpu" class="w-4 h-4"></i>
+              <span>Fetch & Review PR</span>
+            </button>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Example: Any public repo PR (e.g. facebook/react, fastapi, nodejs) or your private repositories with a GitHub Token configured in Settings.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode B: Direct Code / Diff Input Box -->
+    <div id="codeInputSection" class="glass-panel p-6 hidden">
+      <div class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center space-x-3">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">File Name</label>
+              <input id="fileNameInput" type="text" value="auth_service.py" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-md text-xs text-slate-200 w-44 focus:outline-none focus:border-cyan-500" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Language</label>
+              <select id="languageSelect" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-md text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+                <option value="python">Python</option>
+                <option value="javascript">JavaScript / TypeScript</option>
+                <option value="java">Java</option>
+                <option value="go">Go</option>
+                <option value="diff">Git Unified Diff</option>
+                <option value="sql">SQL</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="clearCodeInput()" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-300 transition">
+              Clear
+            </button>
+            <button id="runDirectReviewBtn" onclick="executeDirectReview()" class="px-6 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-medium text-xs shadow-lg shadow-cyan-500/25 flex items-center space-x-2 transition">
+              <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+              <span>Run AI Review</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <textarea id="rawCodeTextarea" rows="12" placeholder="Paste your source code or git unified diff here..." class="w-full p-4 bg-slate-900/90 border border-slate-700/80 rounded-lg font-mono text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 leading-relaxed"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State Indicator -->
+    <div id="loadingIndicator" class="glass-panel p-8 text-center space-y-4 hidden">
+      <div class="inline-block relative">
+        <div class="w-14 h-14 rounded-full border-4 border-cyan-500/20 border-t-cyan-400 animate-spin"></div>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <i data-lucide="shield" class="w-6 h-6 text-cyan-400"></i>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-base font-semibold text-slate-200">Analyzing Code Structure & Vulnerabilities...</h3>
+        <p id="loadingStatusText" class="text-xs text-slate-400 mt-1">Running AST parsing, OWASP security rules, and performance scans</p>
+      </div>
+    </div>
+
+    <!-- Review Results Section (Dynamically Populated) -->
+    <div id="resultsSection" class="space-y-6 hidden">
+
+      <!-- Executive Overview Card -->
+      <div id="executiveCard" class="glass-panel p-6 border-slate-700/80 relative overflow-hidden">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          
+          <!-- Verdict & Summary -->
+          <div class="space-y-3 flex-grow">
+            <div class="flex items-center space-x-3">
+              <span id="verdictBadge" class="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center space-x-1.5">
+                <i id="verdictIcon" data-lucide="alert-octagon" class="w-4 h-4"></i>
+                <span id="verdictText">REQUEST CHANGES</span>
+              </span>
+              <span id="engineBadge" class="text-xs text-slate-400 flex items-center space-x-1">
+                <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+                <span id="engineText">CodeSentinel Heuristic Engine</span>
+              </span>
+            </div>
+
+            <p id="executiveSummaryText" class="text-sm text-slate-300 leading-relaxed max-w-3xl">
+              Analysis completed. 1 Critical security vulnerability and 2 high-priority issues detected in commit diff.
+            </p>
+
+            <!-- Issue Count Badges -->
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              <span class="badge-critical px-2.5 py-0.5 rounded text-xs font-medium flex items-center space-x-1">
+                <span>Critical:</span>
+                <strong id="countCritical">0</strong>
+              </span>
+              <span class="badge-high px-2.5 py-0.5 rounded text-xs font-medium flex items-center space-x-1">
+                <span>High:</span>
+                <strong id="countHigh">0</strong>
+              </span>
+              <span class="badge-medium px-2.5 py-0.5 rounded text-xs font-medium flex items-center space-x-1">
+                <span>Medium:</span>
+                <strong id="countMedium">0</strong>
+              </span>
+              <span class="badge-low px-2.5 py-0.5 rounded text-xs font-medium flex items-center space-x-1">
+                <span>Low:</span>
+                <strong id="countLow">0</strong>
+              </span>
+            </div>
+          </div>
+
+          <!-- Score Radial Meter -->
+          <div class="flex items-center space-x-4 self-center lg:self-auto bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+            <div class="score-circle" id="scoreCircle">
+              <div class="score-circle-content">
+                <span id="scoreValue" class="text-xl font-bold text-white">45</span>
+                <span class="text-[10px] text-slate-400 block -mt-1">/ 100</span>
+              </div>
+            </div>
+            <div>
+              <div class="text-xs text-slate-400 font-medium">Health Grade</div>
+              <div id="gradeBadge" class="text-2xl font-black text-rose-400">D</div>
+              <div id="riskLevelText" class="text-[11px] text-rose-400/80 font-medium">High Risk</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Result Details Tabs -->
+      <div class="glass-panel overflow-hidden">
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-slate-800 px-4 bg-slate-900/50">
+          <button onclick="switchResultTab('code-tab')" id="tabBtnCode" class="px-4 py-3 text-xs font-semibold border-b-2 border-cyan-400 text-cyan-400 flex items-center space-x-2 transition">
+            <i data-lucide="file-code" class="w-4 h-4"></i>
+            <span>Interactive Code & Findings</span>
+          </button>
+          <button onclick="switchResultTab('issues-tab')" id="tabBtnIssues" class="px-4 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition">
+            <i data-lucide="list-checks" class="w-4 h-4"></i>
+            <span>All Issues (<span id="tabIssuesCount">0</span>)</span>
+          </button>
+          <button onclick="switchResultTab('risks-tab')" id="tabBtnRisks" class="px-4 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+            <span>Architecture & Commendations</span>
+          </button>
+          <button onclick="switchResultTab('export-tab')" id="tabBtnExport" class="px-4 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition">
+            <i data-lucide="share-2" class="w-4 h-4"></i>
+            <span>PR Export & Markdown</span>
+          </button>
+        </div>
+
+        <!-- Tab 1: Code View with Inline Annotations -->
+        <div id="codeTabContent" class="p-0">
+          <div class="bg-slate-950 p-3 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
+            <span id="activeReviewFileName">auth_service.py</span>
+            <span class="text-[11px] text-slate-500">Click any highlighted line to view the AI vulnerability report</span>
+          </div>
+          <div id="codeLinesContainer" class="p-2 overflow-x-auto bg-[#0a0e17]">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Filterable Issues List -->
+        <div id="issuesTabContent" class="p-6 space-y-4 hidden">
+          <!-- Filter Controls -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-800">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs text-slate-400">Filter Severity:</span>
+              <button onclick="filterIssues('all')" class="px-2.5 py-1 rounded text-xs bg-slate-800 text-slate-200 border border-slate-700">All</button>
+              <button onclick="filterIssues('critical')" class="px-2.5 py-1 rounded text-xs bg-rose-950/40 text-rose-300 border border-rose-800/60">Critical</button>
+              <button onclick="filterIssues('high')" class="px-2.5 py-1 rounded text-xs bg-orange-950/40 text-orange-300 border border-orange-800/60">High</button>
+              <button onclick="filterIssues('medium')" class="px-2.5 py-1 rounded text-xs bg-amber-950/40 text-amber-300 border border-amber-800/60">Medium</button>
+              <button onclick="filterIssues('low')" class="px-2.5 py-1 rounded text-xs bg-blue-950/40 text-blue-300 border border-blue-800/60">Low</button>
+            </div>
+            <div class="text-xs text-slate-400">
+              Showing <span id="filteredCount">0</span> issues
+            </div>
+          </div>
+
+          <div id="issuesListContainer" class="space-y-3">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+
+        <!-- Tab 3: Architecture & Commendations -->
+        <div id="risksTabContent" class="p-6 space-y-6 hidden">
+          <div>
+            <h4 class="text-sm font-semibold text-slate-200 flex items-center space-x-2 mb-3">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+              <span>High-Level Architectural & Deployment Risks</span>
+            </h4>
+            <ul id="keyRisksList" class="space-y-2 text-xs text-slate-300">
+              <!-- Rendered by app.js -->
+            </ul>
+          </div>
+
+          <div class="border-t border-slate-800 pt-5">
+            <h4 class="text-sm font-semibold text-slate-200 flex items-center space-x-2 mb-3">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+              <span>Commendations & Good Engineering Practices</span>
+            </h4>
+            <ul id="positiveNotesList" class="space-y-2 text-xs text-slate-300">
+              <!-- Rendered by app.js -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Tab 4: Export & GitHub Comment -->
+        <div id="exportTabContent" class="p-6 space-y-4 hidden">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-sm font-semibold text-slate-200">GitHub Pull Request Review Markdown</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Ready to copy and paste as an official PR review comment or post via GitHub API.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="copyMarkdownReport()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-200 font-medium flex items-center space-x-1.5 transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                <span id="copyBtnText">Copy Markdown</span>
+              </button>
+              <button onclick="postReviewToGithub()" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs text-white font-medium flex items-center space-x-1.5 transition">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                <span>Publish to GitHub PR</span>
+              </button>
+            </div>
+          </div>
+
+          <pre id="markdownExportArea" class="p-4 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-slate-300 overflow-x-auto whitespace-pre-wrap select-all max-h-96"></pre>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-panel bg-slate-900 border-slate-700 w-full max-w-lg p-6 rounded-xl space-y-5 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-cyan-400"></i>
+          <h3 class="text-base font-semibold text-white">Review & AI Model Settings</h3>
+        </div>
+        <button onclick="toggleSettingsModal(false)" class="text-slate-400 hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">AI Provider</label>
+          <select id="settingProvider" onchange="updateProviderSettings()" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-cyan-500">
+            <option value="heuristic">Built-in Smart Heuristic & AST Engine (Offline / Instant)</option>
+            <option value="gemini">Google Gemini API (Gemini 1.5 / 2.0)</option>
+            <option value="openai">OpenAI API (GPT-4o / GPT-4o-mini)</option>
+          </select>
+        </div>
+
+        <div id="apiKeyGroup" class="space-y-1 hidden">
+          <label class="block font-medium text-slate-300" id="apiKeyLabel">API Key</label>
+          <input type="password" id="settingApiKey" placeholder="Enter API Key" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-cyan-500" />
+          <p class="text-[11px] text-slate-500">Stored locally in your browser session for direct API calls.</p>
+        </div>
+
+        <div id="modelGroup" class="space-y-1 hidden">
+          <label class="block font-medium text-slate-300">Model</label>
+          <select id="settingModel" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-cyan-500">
+            <!-- Dynamically populated based on provider -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">Strictness Level</label>
+          <select id="settingStrictness" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-cyan-500">
+            <option value="standard">Standard (Balanced for production teams)</option>
+            <option value="relaxed">Relaxed (Flags only critical blockers)</option>
+            <option value="paranoid">Paranoid / Enterprise (Flags minor smells & strict security)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">GitHub Personal Access Token (Optional)</label>
+          <input type="password" id="settingGithubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-cyan-500" />
+          <p class="text-[11px] text-slate-500">Required only for private GitHub repos or higher API rate limits.</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-800">
+        <button onclick="toggleSettingsModal(false)" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 transition">
+          Close
+        </button>
+        <button onclick="saveSettings()" class="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-medium text-white transition">
+          Save Preferences
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 shadow-xl text-xs font-medium text-slate-200 flex items-center space-x-2 transition-all duration-300 transform translate-y-24 opacity-0 z-50 pointer-events-none">
+    <i data-lucide="info" class="w-4 h-4 text-cyan-400" id="toastIcon"></i>
+    <span id="toastMsg">Notification</span>
+  </div>
+
+  <!-- Application Logic -->
+  <script src="/static/app.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
+

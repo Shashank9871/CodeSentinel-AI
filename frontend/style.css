@@ -1,0 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg-dark: #090d16;
+  --bg-card: #0f172a;
+  --bg-card-hover: #162038;
+  --border-color: #1e293b;
+  --accent-cyan: #06b6d4;
+  --accent-blue: #3b82f6;
+  --accent-indigo: #6366f1;
+  --accent-purple: #8b5cf6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+pre, code, .font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Glassmorphism & Cards */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.glass-card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: #334155;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Glowing Elements */
+.glow-cyan {
+  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.35);
+}
+.glow-danger {
+  box-shadow: 0 0 25px -5px rgba(239, 68, 68, 0.35);
+}
+.glow-success {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.35);
+}
+.glow-warning {
+  box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.35);
+}
+
+/* Code Diff Line Highlighting */
+.code-line {
+  display: flex;
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 1px 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+.code-line:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+.line-num {
+  width: 50px;
+  flex-shrink: 0;
+  text-align: right;
+  padding-right: 14px;
+  user-select: none;
+  color: #475569;
+  font-size: 12px;
+}
+.line-content {
+  flex-grow: 1;
+  white-space: pre-wrap;
+  word-break: break-all;
+  padding-right: 16px;
+}
+
+.line-critical {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-left: 3px solid #ef4444;
+}
+.line-high {
+  background: rgba(249, 115, 22, 0.15) !important;
+  border-left: 3px solid #f97316;
+}
+.line-medium {
+  background: rgba(245, 158, 11, 0.12) !important;
+  border-left: 3px solid #f59e0b;
+}
+.line-low {
+  background: rgba(59, 130, 246, 0.12) !important;
+  border-left: 3px solid #3b82f6;
+}
+
+/* Inline Comment Card */
+.inline-comment-box {
+  margin: 6px 12px 10px 50px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #111a2e;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Severity Badges */
+.badge-critical {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+.badge-high {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fdba74;
+  border: 1px solid rgba(249, 115, 22, 0.4);
+}
+.badge-medium {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fde68a;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+.badge-low {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+.badge-info {
+  background: rgba(148, 163, 184, 0.2);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+/* Score Circle */
+.score-circle {
+  position: relative;
+  width: 95px;
+  height: 95px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: conic-gradient(var(--accent-cyan) var(--score-pct, 75%), #1e293b 0);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+}
+.score-circle::before {
+  content: '';
+  position: absolute;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  background: #0f172a;
+}
+.score-circle-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+}
+
